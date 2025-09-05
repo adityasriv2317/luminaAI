@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import BASE_URL from "../constants/auth";
+import { BASE_URL } from "../constants/auth";
 
 export default function LoginWindow() {
   const router = useRouter();
