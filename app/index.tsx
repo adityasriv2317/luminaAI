@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  KeyboardAvoidingView,
-} from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import { StatusBar } from "expo-status-bar";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { HugeiconsIcon } from "@hugeicons/react-native";
 import {
   MenuTwoLineIcon,
-  UserIcon,
   SentIcon,
+  UserIcon,
 } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function App() {
   const router = useRouter();
@@ -25,6 +23,10 @@ export default function App() {
     const checkWelcomeScreen = async () => {
       const welcomeScreenShown =
         await AsyncStorage.getItem("welcomeScreenShown");
+      const storedUsername = welcomeScreenShown
+        ? await AsyncStorage.getItem("username")
+        : "";
+      setUsername(storedUsername ?? "");
       if (welcomeScreenShown === null) {
         router.replace("/(basics)/Login");
       } else {
@@ -33,15 +35,17 @@ export default function App() {
     checkWelcomeScreen();
   }, []);
 
+  const [username, setUsername] = useState("");
+
   return (
     <SafeAreaView className="flex-1 items-center bg-black">
       {/* top bar */}
-      <View className="w-full flex-row items-center justify-between border-b">
+      <View className="w-full flex-row items-center py-2 justify-between border-b border-b-gray-700">
         <TouchableOpacity className="px-4 py-2">
-          <HugeiconsIcon icon={MenuTwoLineIcon} size={24} color="#10b981" />
+          <HugeiconsIcon icon={MenuTwoLineIcon} size={24} color="#10b581" />
         </TouchableOpacity>
 
-        <Text className="text-green-400 text-xl">Lumina AI</Text>
+        <Text className="text-green-400 text-2xl">Lumina AI</Text>
 
         {/* profile button */}
         <TouchableOpacity className="px-4 py-2">
@@ -50,17 +54,21 @@ export default function App() {
       </View>
 
       <View className="flex-1 items-center justify-center px-6">
-        <Text className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-          Lumina AI
+        <Text className="text-4xl font-bold text-green-50 mb-4">
+          Welcome{username ? `, ${username}` : ""}!
         </Text>
-        <Text className="text-lg text-gray-700 dark:text-gray-300 text-center">
+        <Text className="text-lg text-gray-300 mx-4 text-center">
           Welcome to Lumina AI, your personal assistant for everything AI!
         </Text>
       </View>
 
       {/* text input bar */}
-      <View className="w-full absolute bottom-8 px-4 pb-4">
-        <View className="flex-row items-center bg-gray-900 rounded-full py-2 px-4 border border-green-200">
+      <KeyboardAvoidingView
+        behavior="padding"
+        keyboardVerticalOffset={10}
+        style={{ width: "100%" }}
+      >
+        <View className="flex-row items-center mx-6 bg-gray-900 rounded-full py-2 px-4 border border-green-200">
           <TextInput
             className="flex-1 h-12 text-gray-900"
             placeholder="Type your message..."
@@ -73,7 +81,7 @@ export default function App() {
             <HugeiconsIcon icon={SentIcon} size={24} color="#000000" />
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
