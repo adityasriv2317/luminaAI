@@ -12,21 +12,40 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Clipboard,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
+import FormattedText from "@/components/FormattedText";
+import Toast from "react-native-toast-message";
+import Animated, {
+  FadeIn,
+  FadeInUp,
+  FadeInLeft,
+  FadeInRight,
+  FadeInDown,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TypingIndicator from "@/components/Typing";
-import { BASE_URL } from "../constants/auth";
+import { BASE_URL } from "@/constants/auth";
 
 export default function App() {
   const router = useRouter();
-
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const [talking, SetTalking] = useState(false);
+  const [chat, SetChat] = useState<
+    Array<{ sender: number; text: string; expand: boolean }>
+  >([]);
+  const [username, setUsername] = useState("");
+  const [question, setQuestion] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const checkWelcomeScreen = async () => {
@@ -42,17 +61,6 @@ export default function App() {
     };
     checkWelcomeScreen();
   }, []);
-
-  const [talking, SetTalking] = useState(false);
-  const [chat, SetChat] = useState<
-    Array<{ sender: number; text: string; expand: boolean }>
-  >([]);
-
-  const [username, setUsername] = useState("");
-  const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     if (scrollViewRef.current) {
@@ -86,7 +94,7 @@ export default function App() {
     }
   };
 
-  const toggleExpand = (i: any) => {
+  const toggleExpand = (i: number) => {
     SetChat((prev) =>
       prev.map((msg, ind) =>
         ind === i ? { ...msg, expand: !msg.expand } : msg
@@ -94,59 +102,74 @@ export default function App() {
     );
   };
 
+  const handleCopy = (text: string) => {
+    Clipboard.setString(text);
+    Toast.show({
+      type: "success",
+      text1: "Copied to clipboard!",
+      position: "bottom",
+      visibilityTime: 2000,
+    });
+  };
+
   return (
-    <SafeAreaView className="flex-1 bg-black">
-      {/* top bar */}
-      <View className="w-full flex-row items-center py-2 justify-around border-b border-b-gray-700 relative">
-        <Text className="text-green-400 p-2 text-center w-full text-2xl">
-          Lumina AI
-        </Text>
+    <SafeAreaView style={styles.container}>
+      {/* Top App Bar */}
+      <View style={styles.topAppBar}>
+        <Text style={styles.topAppBarTitle}>Lumina AI</Text>
         <TouchableOpacity
           onPress={() => router.push("/profile")}
-          className="p-2 border border-green-600 rounded-full absolute top-3 right-4"
+          style={styles.profileButton}
         >
-          <HugeiconsIcon icon={UserIcon} size={18} color="#10b981" />
+          <HugeiconsIcon icon={UserIcon} size={20} color="#22c55e" />
         </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={"padding"}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        keyboardVerticalOffset={0}
       >
         {talking ? (
           <ScrollView
             ref={scrollViewRef}
-            className="px-2"
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={styles.scrollContainer}
           >
             {chat.map((msg, i) => (
-              <View
+              <Animated.View
                 key={i}
+                entering={FadeInDown.duration(300)}
                 className={`flex w-full mt-4 ${
                   msg.sender === 0 ? "items-end" : "items-start"
                 }`}
               >
                 <View
-                  className={`p-4 rounded-b-3xl max-w-[75%] ${
+                  className={`p-3 rounded-b-2xl max-w-[80%] ${
                     msg.sender === 0
-                      ? "bg-gray-800 rounded-l-3xl"
-                      : "rounded-r-3xl bg-green-950"
+                      ? "bg-gray-800 rounded-l-2xl"
+                      : "bg-green-700 rounded-r-2xl"
                   }`}
                 >
-                  <Text className="leading-relaxed text-white text-md">
-                    {msg.expand ? msg.text : `${msg.text.slice(0, 250)}...`}
-                  </Text>
+                  <FormattedText
+                    text={
+                      msg.expand ? msg.text : `${msg.text.slice(0, 250)}...`
+                    }
+                    style={{
+                      fontSize: 16,
+                      color: "#fff",
+                      lineHeight: 24,
+                    }}
+                  />
                 </View>
                 <View
-                  className={`flex flex-row gap-0.5 w-full ${
+                  className={`flex flex-row gap-0.5 w-full mt-1.5 ${
                     msg.sender === 0
                       ? "items-end justify-end"
                       : "items-start justify-start"
                   }`}
                 >
                   <TouchableOpacity
-                    className="bg-white/10 rounded-full p-2"
+                    className="bg-zinc-800/50 rounded-full p-1.5"
                     onPress={() => toggleExpand(i)}
                   >
                     <HugeiconsIcon
@@ -156,42 +179,49 @@ export default function App() {
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => {}}
-                    className="bg-white/10 rounded-full p-2"
+                    onPress={() => handleCopy(msg.text)}
+                    className="bg-zinc-800/50 rounded-full p-1.5"
                   >
                     <HugeiconsIcon icon={Copy01Icon} color="#fff" size={14} />
                   </TouchableOpacity>
                 </View>
-              </View>
+              </Animated.View>
             ))}
 
             {loading && (
-              <View className="bg-green-900/50 w-20 mt-4 flex items-center justify-center py-1 rounded-r-3xl rounded-b-3xl">
+              <Animated.View
+                entering={FadeInLeft.duration(400)}
+                exiting={FadeInRight.duration(300)}
+                className="bg-[#16241e] w-20 mt-4 flex items-center justify-center py-1 rounded-r-2xl rounded-b-2xl"
+              >
                 <TypingIndicator />
-              </View>
+              </Animated.View>
             )}
           </ScrollView>
         ) : (
           <Animated.View
             className="flex-1 items-center justify-center px-6"
-            entering={FadeIn.duration(700)}
+            style={{ backgroundColor: "#000" }}
+            entering={FadeInUp.duration(800)}
           >
-            <Text className="text-4xl font-bold text-green-50 mb-4">
+            <Text className="text-4xl font-extrabold text-green-500 mb-2 text-center">
               Welcome{username ? `, ${username}` : ""}!
             </Text>
-            <Text className="text-lg text-gray-300 mx-4 text-center">
-              Welcome to Lumina AI, your personal assistant for everything AI!
+            <Text className="text-base text-gray-400 mx-4 text-center">
+              Your personal assistant for everything AI. Start a conversation
+              below.
             </Text>
           </Animated.View>
         )}
 
-        {/* FIX 1: The input bar is now INSIDE the KeyboardAvoidingView and NOT absolutely positioned */}
-        <View className="flex-row items-center mx-4 my-2 bg-green-900/20 rounded-full py-2 px-4 border border-green-200">
+        <Animated.View
+          entering={FadeInUp.duration(500)}
+          style={styles.inputBarContainer}
+        >
           <TextInput
-            className="flex-1 text-xl font-bold text-white"
-            style={{ minHeight: 48, maxHeight: 120 }} // Use minHeight for consistency
-            placeholder="ask anything..."
-            placeholderTextColor="#9ca3af"
+            style={styles.textInput}
+            placeholder="Ask anything..."
+            placeholderTextColor="#9ca3b8"
             multiline
             value={question}
             onChangeText={setQuestion}
@@ -200,14 +230,89 @@ export default function App() {
             returnKeyType="send"
           />
           <TouchableOpacity
-            className="ml-2 p-2 bg-white rounded-full"
+            style={[styles.sendButton, loading && styles.sendButtonDisabled]}
             onPress={handleAsk}
             disabled={loading}
           >
-            <HugeiconsIcon icon={SentIcon} size={24} color="#000000" />
+            <HugeiconsIcon icon={SentIcon} size={20} color="#ffffff" />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
+
+        {talking && (
+          <Animated.View entering={FadeIn.duration(500)}>
+            <Text className="text-gray-400 text-center">
+              Verify answers from AI before utilising them.
+            </Text>
+          </Animated.View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#10151a",
+  },
+  topAppBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: "#10151a",
+    borderBottomWidth: 2,
+    borderBottomColor: "#ffffff18",
+    position: "relative",
+  },
+  topAppBarTitle: {
+    color: "#22c55e",
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  profileButton: {
+    position: "absolute",
+    right: 16,
+    top: 14,
+    padding: 8,
+    borderRadius: 999,
+    backgroundColor: "#16241e",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 12,
+    paddingBottom: 20,
+    backgroundColor: "#000000",
+    justifyContent: "flex-end",
+  },
+  inputBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginVertical: 8,
+    backgroundColor: "#16241e",
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#22c55e40",
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#e5e7eb",
+    minHeight: 32,
+    maxHeight: 120,
+    paddingTop: Platform.OS === "ios" ? 4 : 0,
+    paddingBottom: 0,
+  },
+  sendButton: {
+    padding: 10,
+    backgroundColor: "#22c55e",
+    borderRadius: 999,
+  },
+  sendButtonDisabled: {
+    backgroundColor: "#166534",
+  },
+});

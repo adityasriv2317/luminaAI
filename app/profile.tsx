@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -47,27 +46,7 @@ export default function ProfileScreen() {
       onPress: handleLogout,
     },
   ];
-  //   const handleLogout = () => {
-  //     Alert.alert(
-  //       "Logout",
-  //       "Are you sure you want to logout?",
-  //       [
-  //         {
-  //           text: "Cancel",
-  //           style: "cancel",
-  //         },
-  //         {
-  //           text: "Logout",
-  //           style: "destructive",
-  //           onPress: async () => {
-  //             await AsyncStorage.clear();
-  //             router.replace("/(basics)/Login");
-  //           },
-  //         },
-  //       ],
-  //       { cancelable: true }
-  //     );
-  //   };
+
   const [profile, setProfile] = useState<{
     email: string;
     username: string;
@@ -179,7 +158,7 @@ export default function ProfileScreen() {
         title="Logout"
         message="Are you sure you want to logout?"
         buttons={logoutButtons}
-        onDismiss={() => setLogoutAlertVisible(false)} // To close on backdrop press
+        onDismiss={() => setLogoutAlertVisible(false)}
       />
     </View>
   );
