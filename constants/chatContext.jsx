@@ -31,12 +31,16 @@ export const ChatProvider = ({ children }) => {
   const createNewChat = async () => {
     const token = await getToken();
     try {
-      const res = await axios.post(`${BASE_URL}/chats`, {
-        headers: {
-          Authentication: `Bearer ${token}`,
-        },
-      });
-      setChatId(res.data.id);
+      const res = await axios.post(
+        `${BASE_URL}/chats`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setChatId(res.data);
     } catch (error) {
       console.error("Error creating new chat:", error);
     }

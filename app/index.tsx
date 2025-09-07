@@ -190,11 +190,7 @@ export default function HomeScreen() {
             <HugeiconsIcon icon={MenuTwoLineIcon} size={22} color="#22c55e" />
           </TouchableOpacity>
           <Text style={styles.topAppBarTitle}>
-            {talking
-              ? chat[0].text.length > 20
-                ? `${chat[0].text.slice(0, 19)}...`
-                : chat[0].text
-              : "Lumina AI"}
+            {chatId ? `Chat ID: ${chatId}` : "Lumina AI"}
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/(basics)/profile")}
