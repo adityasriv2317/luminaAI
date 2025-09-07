@@ -12,6 +12,7 @@ export async function getToken() {
   try {
     const token = await secureStore.getItemAsync("userToken");
     if (token) {
+      // console.log(token, "No token found");
       return token;
     }
     return null;

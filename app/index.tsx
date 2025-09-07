@@ -39,10 +39,28 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 import TypingIndicator from "@/components/Typing";
 import { BASE_URL } from "@/constants/auth";
+import { DrawerLayoutAndroid } from "react-native-gesture-handler";
+import { ChatDrawer } from "@/components/Drawer";
+import { useChat } from "@/constants/chatContext";
+import { getToken } from "@/constants/saveToken";
 
-export default function App() {
+export default function HomeScreen() {
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
+  const {
+    chatHistory,
+    setChatHistory,
+    isLoading,
+    setIsLoading,
+    chatId,
+    setChatId,
+    messages,
+    setMessages,
+    inputMessage,
+    setInputMessage,
+    createNewChat,
+    getChats,
+  } = useChat();
 
   const [talking, SetTalking] = useState(false);
   const [chat, SetChat] = useState<
@@ -72,6 +90,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!chatId) {
+      createNewChat();
+    }
+  }, [chatId]);
+
+  useEffect(() => {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
@@ -90,7 +114,19 @@ export default function App() {
     SetTalking(true);
     setQuestion("");
     try {
-      const res = await axios.post(`${BASE_URL}/ask`, { query: question });
+      const token = await getToken();
+      const res = await axios.post(
+        `${BASE_URL}/chats/${chatId}/message`,
+        {
+          query: question,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       setResponse(res.data?.answer || "No response.");
       const botMessage = { sender: 1, text: res.data?.answer, expand: false };
       SetChat((prev) => [...prev, botMessage]);
@@ -125,174 +161,199 @@ export default function App() {
     transform: [{ scale: sendScale.value }],
   }));
 
+  const handleDrawerOpen = () => {
+    // check if chat history exists
+    if (chatHistory.size === 0) {
+      getChats();
+    }
+  };
+
+  const drawerRef = useRef<DrawerLayoutAndroid>(null);
+
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Top App Bar */}
-      <View style={styles.topAppBar}>
-        <TouchableOpacity style={styles.menuButton}>
-          <HugeiconsIcon icon={MenuTwoLineIcon} size={22} color="#22c55e" />
-        </TouchableOpacity>
-        <Text style={styles.topAppBarTitle}>
-          {talking
-            ? chat[0].text.length > 20
-              ? `${chat[0].text.slice(0, 19)}...`
-              : chat[0].text
-            : "Lumina AI"}
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push("/(basics)/profile")}
-          style={styles.profileButton}
-        >
-          <HugeiconsIcon icon={UserIcon} size={22} color="#22c55e" />
-        </TouchableOpacity>
-      </View>
-
-      <KeyboardAvoidingView
-        behavior={"padding"}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={0}
-      >
-        {talking ? (
-          <ScrollView
-            ref={scrollViewRef}
-            contentContainerStyle={styles.scrollContainer}
-          >
-            {chat.map((msg, i) => (
-              <Animated.View
-                key={i}
-                entering={FadeInDown.duration(450).easing(
-                  Easing.out(Easing.exp)
-                )}
-                layout={Layout.springify().damping(20).stiffness(150)}
-                className={`flex w-full mt-4 ${
-                  msg.sender === 0 ? "items-end" : "items-start"
-                }`}
-              >
-                <View
-                  className={`p-3 rounded-b-3xl max-w-[80%] ${
-                    msg.sender === 0
-                      ? "bg-gray-800 rounded-l-3xl"
-                      : "bg-green-700 rounded-r-3xl"
-                  }`}
-                >
-                  <FormattedText
-                    text={
-                      msg.expand ? msg.text : `${msg.text.slice(0, 250)}...`
-                    }
-                    style={{
-                      fontSize: 16,
-                      color: "#fff",
-                      lineHeight: 24,
-                    }}
-                  />
-                </View>
-                <View
-                  className={`flex flex-row gap-0.5 w-full mt-1.5 ${
-                    msg.sender === 0
-                      ? "items-end justify-end"
-                      : "items-start justify-start"
-                  }`}
-                >
-                  <TouchableOpacity
-                    className="bg-zinc-800/50 rounded-full p-1.5"
-                    onPress={() => toggleExpand(i)}
-                  >
-                    <HugeiconsIcon
-                      icon={ArrowExpand01Icon}
-                      color="#fff"
-                      size={14}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleCopy(msg.text)}
-                    className="bg-zinc-800/50 rounded-full p-1.5"
-                  >
-                    <HugeiconsIcon icon={Copy01Icon} color="#fff" size={14} />
-                  </TouchableOpacity>
-                </View>
-              </Animated.View>
-            ))}
-
-            {loading && (
-              <Animated.View
-                entering={FadeInLeft.duration(500).easing(
-                  Easing.out(Easing.exp)
-                )}
-                exiting={FadeInRight.duration(400).easing(
-                  Easing.in(Easing.exp)
-                )}
-                className="bg-[#16241e] w-20 mt-4 flex items-center justify-center py-1 rounded-r-2xl rounded-b-2xl"
-              >
-                <TypingIndicator />
-              </Animated.View>
-            )}
-          </ScrollView>
-        ) : (
-          <Animated.View
-            className="flex-1 items-center justify-center px-6"
-            style={{ backgroundColor: "#000" }}
-            entering={FadeInUp.duration(800).easing(Easing.out(Easing.exp))}
-          >
-            <Text className="text-4xl font-extrabold text-green-500 mb-2 text-center">
-              Welcome{username ? `, ${username}` : ""}!
-            </Text>
-            <Text className="text-base text-gray-400 mx-4 text-center">
-              Your personal assistant for everything AI. Start a conversation
-              below.
-            </Text>
-          </Animated.View>
-        )}
-
-        <Animated.View
-          entering={FadeInUp.duration(600).easing(Easing.out(Easing.exp))}
-          style={styles.inputBarContainer}
-        >
-          <TextInput
-            style={styles.textInput}
-            placeholder="Ask anything..."
-            placeholderTextColor="#9ca3b8"
-            multiline
-            value={question}
-            onChangeText={setQuestion}
-            editable={!loading}
-            onSubmitEditing={handleAsk}
-            returnKeyType="send"
-          />
+    <DrawerLayoutAndroid
+      ref={drawerRef}
+      drawerWidth={320}
+      drawerPosition="left"
+      drawerBackgroundColor={"transparent"}
+      renderNavigationView={() => <ChatDrawer />}
+      onDrawerOpen={handleDrawerOpen}
+    >
+      <SafeAreaView style={styles.container}>
+        <View style={styles.topAppBar}>
           <TouchableOpacity
-            onPressIn={() => {
-              sendScale.value = withSpring(0.9, {
-                damping: 15,
-                stiffness: 200,
-              });
+            onPress={() => {
+              drawerRef.current?.openDrawer();
             }}
-            onPressOut={() => {
-              sendScale.value = withSpring(1, { damping: 15, stiffness: 200 });
-            }}
-            style={[styles.sendButton, loading && styles.sendButtonDisabled]}
-            onPress={handleAsk}
-            disabled={loading}
+            style={styles.menuButton}
           >
-            <Animated.View style={sendButtonStyle}>
-              {loading ? (
-                <ActivityIndicator size="small" color="#ffffff" />
-              ) : (
-                <HugeiconsIcon icon={SentIcon} size={20} color="#ffffff" />
-              )}
-            </Animated.View>
+            <HugeiconsIcon icon={MenuTwoLineIcon} size={22} color="#22c55e" />
           </TouchableOpacity>
-        </Animated.View>
-
-        {talking && (
-          <Animated.View
-            entering={FadeIn.duration(500).easing(Easing.out(Easing.exp))}
+          <Text style={styles.topAppBarTitle}>
+            {talking
+              ? chat[0].text.length > 20
+                ? `${chat[0].text.slice(0, 19)}...`
+                : chat[0].text
+              : "Lumina AI"}
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push("/(basics)/profile")}
+            style={styles.profileButton}
           >
-            <Text className="text-gray-400 text-center">
-              Verify answers from AI before utilising them.
-            </Text>
+            <HugeiconsIcon icon={UserIcon} size={22} color="#22c55e" />
+          </TouchableOpacity>
+        </View>
+
+        <KeyboardAvoidingView
+          behavior={"padding"}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={0}
+        >
+          {talking ? (
+            <ScrollView
+              ref={scrollViewRef}
+              contentContainerStyle={styles.scrollContainer}
+            >
+              {chat.map((msg, i) => (
+                <Animated.View
+                  key={i}
+                  entering={FadeInDown.duration(450).easing(
+                    Easing.out(Easing.exp)
+                  )}
+                  layout={Layout.springify().damping(20).stiffness(150)}
+                  className={`flex w-full mt-4 ${
+                    msg.sender === 0 ? "items-end" : "items-start"
+                  }`}
+                >
+                  <View
+                    className={`p-3 rounded-b-3xl max-w-[80%] ${
+                      msg.sender === 0
+                        ? "bg-gray-800 rounded-l-3xl"
+                        : "bg-green-700 rounded-r-3xl"
+                    }`}
+                  >
+                    <FormattedText
+                      text={
+                        msg.expand ? msg.text : `${msg.text.slice(0, 250)}...`
+                      }
+                      style={{
+                        fontSize: 16,
+                        color: "#fff",
+                        lineHeight: 24,
+                      }}
+                    />
+                  </View>
+                  <View
+                    className={`flex flex-row gap-0.5 w-full mt-1.5 ${
+                      msg.sender === 0
+                        ? "items-end justify-end"
+                        : "items-start justify-start"
+                    }`}
+                  >
+                    <TouchableOpacity
+                      className="bg-zinc-800/50 rounded-full p-1.5"
+                      onPress={() => toggleExpand(i)}
+                    >
+                      <HugeiconsIcon
+                        icon={ArrowExpand01Icon}
+                        color="#fff"
+                        size={14}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleCopy(msg.text)}
+                      className="bg-zinc-800/50 rounded-full p-1.5"
+                    >
+                      <HugeiconsIcon icon={Copy01Icon} color="#fff" size={14} />
+                    </TouchableOpacity>
+                  </View>
+                </Animated.View>
+              ))}
+
+              {loading && (
+                <Animated.View
+                  entering={FadeInLeft.duration(500).easing(
+                    Easing.out(Easing.exp)
+                  )}
+                  exiting={FadeInRight.duration(400).easing(
+                    Easing.in(Easing.exp)
+                  )}
+                  className="bg-[#16241e] w-20 mt-4 flex items-center justify-center py-1 rounded-r-2xl rounded-b-2xl"
+                >
+                  <TypingIndicator />
+                </Animated.View>
+              )}
+            </ScrollView>
+          ) : (
+            <Animated.View
+              className="flex-1 items-center justify-center px-6"
+              style={{ backgroundColor: "#000" }}
+              entering={FadeInUp.duration(800).easing(Easing.out(Easing.exp))}
+            >
+              <Text className="text-4xl font-extrabold text-green-500 mb-2 text-center">
+                Welcome{username ? `, ${username}` : ""}!
+              </Text>
+              <Text className="text-base text-gray-400 mx-4 text-center">
+                Your personal assistant for everything AI. Start a conversation
+                below.
+              </Text>
+            </Animated.View>
+          )}
+
+          <Animated.View
+            entering={FadeInUp.duration(600).easing(Easing.out(Easing.exp))}
+            style={styles.inputBarContainer}
+          >
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ask anything..."
+              placeholderTextColor="#9ca3b8"
+              multiline
+              value={question}
+              onChangeText={setQuestion}
+              editable={!loading}
+              onSubmitEditing={handleAsk}
+              returnKeyType="send"
+            />
+            <TouchableOpacity
+              onPressIn={() => {
+                sendScale.value = withSpring(0.9, {
+                  damping: 15,
+                  stiffness: 200,
+                });
+              }}
+              onPressOut={() => {
+                sendScale.value = withSpring(1, {
+                  damping: 15,
+                  stiffness: 200,
+                });
+              }}
+              style={[styles.sendButton, loading && styles.sendButtonDisabled]}
+              onPress={handleAsk}
+              disabled={loading}
+            >
+              <Animated.View style={sendButtonStyle}>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <HugeiconsIcon icon={SentIcon} size={20} color="#ffffff" />
+                )}
+              </Animated.View>
+            </TouchableOpacity>
           </Animated.View>
-        )}
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          {talking && (
+            <Animated.View
+              entering={FadeIn.duration(500).easing(Easing.out(Easing.exp))}
+            >
+              <Text className="text-gray-400 text-center">
+                Verify answers from AI before utilising them.
+              </Text>
+            </Animated.View>
+          )}
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </DrawerLayoutAndroid>
   );
 }
 

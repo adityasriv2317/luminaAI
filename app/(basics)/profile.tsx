@@ -62,21 +62,25 @@ export default function ProfileScreen() {
       setLoading(true);
       setError("");
 
-      const token = await getToken();
-
       try {
+        const token = await getToken();
         const username = await AsyncStorage.getItem("username");
+        // console.log(token);
         if (!username) {
           setError("No username found in local storage.");
           setLoading(false);
           return;
         }
-        const res = await axios.get(`${BASE_URL}/profile`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const res = await axios.get(
+          `${BASE_URL}/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            params: { username },
+          }
+        );
         setProfile(res.data);
       } catch (err: any) {
         setError("Failed to fetch profile.");
