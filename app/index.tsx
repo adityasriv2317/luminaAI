@@ -53,6 +53,8 @@ export default function HomeScreen() {
     setChat,
     inputMessage,
     setInputMessage,
+    setChatTitle,
+    chatTitle,
     createNewChat,
     getChats,
   } = useChat();
@@ -122,7 +124,11 @@ export default function HomeScreen() {
         }
       );
       const botMessage = { sender: 1, text: res.data?.answer, expand: false };
-      setChat((prev: any[]) => [...prev, botMessage]);
+      setChat((prev: any[]) => [
+        ...(Array.isArray(prev) ? prev : []),
+        botMessage,
+      ]);
+      setChatTitle(res.data?.title || "New Chat");
     } catch (err: any) {
       let msg = "Failed to get response.";
       if (err?.response?.data?.message) msg = err.response.data.message;
@@ -134,9 +140,11 @@ export default function HomeScreen() {
 
   const toggleExpand = (i: number) => {
     setChat((prev: any[]) =>
-      prev.map((msg: any, ind: number) =>
-        ind === i ? { ...msg, expand: !msg.expand } : msg
-      )
+      Array.isArray(prev)
+        ? prev.map((msg: any, ind: number) =>
+            ind === i && msg ? { ...msg, expand: !msg.expand } : msg
+          )
+        : []
     );
   };
 
@@ -176,11 +184,7 @@ export default function HomeScreen() {
             <HugeiconsIcon icon={MenuTwoLineIcon} size={22} color="#22c55e" />
           </TouchableOpacity>
           <Text style={styles.topAppBarTitle}>
-            {talking
-              ? chat[0].text.length > 20
-                ? `${chat[0].text.slice(0, 19)}...`
-                : chat[0].text
-              : "Lumina AI"}
+            {talking ? chatTitle : "Lumina AI"}
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/(basics)/profile")}

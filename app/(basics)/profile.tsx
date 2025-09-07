@@ -71,16 +71,13 @@ export default function ProfileScreen() {
           setLoading(false);
           return;
         }
-        const res = await axios.get(
-          `${BASE_URL}/profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            params: { username },
-          }
-        );
+        const res = await axios.get(`${BASE_URL}/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          params: { username },
+        });
         setProfile(res.data);
       } catch (err: any) {
         setError("Failed to fetch profile.");
@@ -292,6 +289,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
+    justifyContent: "center",
   },
   infoText: {
     color: "#e5e7eb",

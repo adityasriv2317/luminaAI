@@ -45,6 +45,9 @@ export const ChatProvider = ({ children }) => {
         }
       );
       setChatId(res.data.chatId);
+      getChats();
+      setChatTitle("New Chat");
+      setChat([]);
     } catch (error) {
       console.error("Error creating new chat:", error);
     }
