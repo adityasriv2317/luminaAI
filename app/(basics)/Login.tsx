@@ -21,33 +21,20 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import LoginWindow from "../../components/LoginWindow";
-import SignupWindow from "../../components/SignupWindow";
+import LottieView from "lottie-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import LoginWindow from "@/components/LoginWindow";
+import SignupWindow from "@/components/SignupWindow";
+import AnimPath from "@/constants/path";
 
 export default function Login() {
   const screenHeight = Dimensions.get("window").height;
 
-  // --- Globe rotation ---
-  const rotation = useSharedValue(0);
-  useEffect(() => {
-    rotation.value = withRepeat(
-      withTiming(360, { duration: 6000, easing: Easing.linear }),
-      -1,
-      false
-    );
-  }, []);
-
-  const globeStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
-  }));
-
-  // --- Bottom sheet & overlay ---
   const sheetTranslateY = useSharedValue(screenHeight * 0.55);
   const sheetOpacity = useSharedValue(0);
   const overlayOpacity = useSharedValue(0);
   const [sheetOpen, setSheetOpen] = useState<null | "login" | "signup">(null);
 
-  // Open sheet
   const openSheet = (type: "login" | "signup") => {
     setSheetOpen(type);
     overlayOpacity.value = withTiming(0.5, { duration: 300 });
@@ -55,7 +42,6 @@ export default function Login() {
     sheetOpacity.value = withTiming(1, { duration: 250 });
   };
 
-  // Close sheet
   const closeSheet = () => {
     overlayOpacity.value = withTiming(0, { duration: 250 });
     sheetTranslateY.value = withSpring(screenHeight * 0.55, {
@@ -76,7 +62,6 @@ export default function Login() {
     backgroundColor: `rgba(0,0,0,${overlayOpacity.value})`,
   }));
 
-  // --- Pan gesture for sheet drag ---
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (_, gestureState) => {
@@ -90,56 +75,48 @@ export default function Login() {
   });
 
   return (
-    <View className="flex-1 items-center justify-center">
-      {/* Background gradient */}
+    <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={["#064e3b", "#18181b", "#09090b"]}
-        className="absolute inset-0"
+        colors={["#0f172a", "#0f172a", "#18181b", "#09090b"]}
+        className="absolute inset-0 -z-10"
       />
 
-      {/* Rotating globe */}
-      <View>
-        <Animated.View
-          style={[{ width: 180, height: 180 }, globeStyle]}
-          className="items-center justify-center"
-        >
-          <Ionicons name="earth" size={140} color="#fff" />
-        </Animated.View>
-        <Text className="text-white text-center font-semibold text-3xl mb-4">
-          Lumina AI
-        </Text>
+      {/* Rotating globe and app title */}
+      <View style={styles.centerContent}>
+        <LottieView
+          source={require("@/assets/landing.json")}
+          style={{ width: 280, height: 280 }}
+          autoPlay
+          loop
+        />
+        <Text style={styles.topAppBarTitle}>Lumina AI</Text>
+        <Text style={styles.appTitle}>Your AI Assistant</Text>
       </View>
 
-      {/* Login/Signup buttons */}
-      <View className="flex-col absolute bottom-4 gap-4 w-full px-14 mb-12">
+      {/* Buttons */}
+      <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={{ backgroundColor: "#fff" }}
-          className="rounded-full w-full py-2 px-4"
+          style={styles.loginButton}
           onPress={() => openSheet("login")}
         >
-          <Text className="text-green-800 font-semibold text-center text-2xl">
-            Login
-          </Text>
+          <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={{ backgroundColor: "#047857" }}
-          className="rounded-full w-full py-2 px-4"
+          style={styles.signupButton}
           onPress={() => openSheet("signup")}
         >
-          <Text className="text-white font-semibold text-center text-2xl">
-            Signup
-          </Text>
+          <Text style={styles.signupButtonText}>Signup</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Modal for sheet */}
+      {/* Modal for bottom sheet */}
       <Modal
         visible={!!sheetOpen}
         transparent
         animationType="none"
         onRequestClose={closeSheet}
       >
-        {/* Overlay */}
         <Pressable style={{ flex: 1 }} onPress={closeSheet}>
           <Animated.View
             style={[{ flex: 1 }, overlayStyle]}
@@ -147,7 +124,6 @@ export default function Login() {
           />
         </Pressable>
 
-        {/* Bottom sheet */}
         <Animated.View
           {...panResponder.panHandlers}
           style={[
@@ -157,7 +133,7 @@ export default function Login() {
               right: 0,
               bottom: 0,
               height: screenHeight * 0.55,
-              backgroundColor: "#012525",
+              backgroundColor: "#16341e",
               borderTopLeftRadius: 32,
               borderTopRightRadius: 32,
               paddingBottom: 24,
@@ -172,7 +148,7 @@ export default function Login() {
                 width: 48,
                 height: 5,
                 borderRadius: 3,
-                backgroundColor: "#10b981",
+                backgroundColor: "#22c55e",
                 marginBottom: 8,
               }}
             />
@@ -187,6 +163,56 @@ export default function Login() {
           </KeyboardAvoidingView>
         </Animated.View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
+
+const styles = {
+  container: {
+    flex: 1,
+    backgroundColor: "#10151a",
+  },
+  topAppBarTitle: {
+    color: "#22c55e",
+    fontSize: 32,
+    fontWeight: "800",
+  },
+  centerContent: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  appTitle: {
+    color: "#e2e5f3",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  buttonContainer: {
+    marginHorizontal: 20,
+    marginBottom: 32,
+    gap: 16,
+  },
+  loginButton: {
+    backgroundColor: "#ddd",
+    paddingVertical: 14,
+    borderRadius: 999,
+    alignItems: "center",
+  },
+  loginButtonText: {
+    color: "#047857",
+    fontSize: 20,
+    fontWeight: "600",
+  },
+  signupButton: {
+    backgroundColor: "#22c55e",
+    paddingVertical: 14,
+    borderRadius: 999,
+    alignItems: "center",
+  },
+  signupButtonText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "600",
+  },
+} as const;

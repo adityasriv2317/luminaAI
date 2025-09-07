@@ -14,6 +14,7 @@ import {
   Platform,
   Clipboard,
   ScrollView,
+  ActivityIndicator,
   StyleSheet,
   Text,
   TextInput,
@@ -25,9 +26,14 @@ import Toast from "react-native-toast-message";
 import Animated, {
   FadeIn,
   FadeInUp,
+  FadeInDown,
   FadeInLeft,
   FadeInRight,
-  FadeInDown,
+  Easing,
+  Layout,
+  useSharedValue,
+  withSpring,
+  useAnimatedStyle,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TypingIndicator from "@/components/Typing";
@@ -46,6 +52,8 @@ export default function App() {
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const sendScale = useSharedValue(1);
 
   useEffect(() => {
     const checkWelcomeScreen = async () => {
@@ -112,6 +120,10 @@ export default function App() {
     });
   };
 
+  const sendButtonStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: sendScale.value }],
+  }));
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Top App Bar */}
@@ -138,16 +150,19 @@ export default function App() {
             {chat.map((msg, i) => (
               <Animated.View
                 key={i}
-                entering={FadeInDown.duration(300)}
+                entering={FadeInDown.duration(450).easing(
+                  Easing.out(Easing.exp)
+                )}
+                layout={Layout.springify().damping(20).stiffness(150)}
                 className={`flex w-full mt-4 ${
                   msg.sender === 0 ? "items-end" : "items-start"
                 }`}
               >
                 <View
-                  className={`p-3 rounded-b-2xl max-w-[80%] ${
+                  className={`p-3 rounded-b-3xl max-w-[80%] ${
                     msg.sender === 0
-                      ? "bg-gray-800 rounded-l-2xl"
-                      : "bg-green-700 rounded-r-2xl"
+                      ? "bg-gray-800 rounded-l-3xl"
+                      : "bg-green-700 rounded-r-3xl"
                   }`}
                 >
                   <FormattedText
@@ -190,8 +205,12 @@ export default function App() {
 
             {loading && (
               <Animated.View
-                entering={FadeInLeft.duration(400)}
-                exiting={FadeInRight.duration(300)}
+                entering={FadeInLeft.duration(500).easing(
+                  Easing.out(Easing.exp)
+                )}
+                exiting={FadeInRight.duration(400).easing(
+                  Easing.in(Easing.exp)
+                )}
                 className="bg-[#16241e] w-20 mt-4 flex items-center justify-center py-1 rounded-r-2xl rounded-b-2xl"
               >
                 <TypingIndicator />
@@ -202,7 +221,7 @@ export default function App() {
           <Animated.View
             className="flex-1 items-center justify-center px-6"
             style={{ backgroundColor: "#000" }}
-            entering={FadeInUp.duration(800)}
+            entering={FadeInUp.duration(800).easing(Easing.out(Easing.exp))}
           >
             <Text className="text-4xl font-extrabold text-green-500 mb-2 text-center">
               Welcome{username ? `, ${username}` : ""}!
@@ -215,7 +234,7 @@ export default function App() {
         )}
 
         <Animated.View
-          entering={FadeInUp.duration(500)}
+          entering={FadeInUp.duration(600).easing(Easing.out(Easing.exp))}
           style={styles.inputBarContainer}
         >
           <TextInput
@@ -230,16 +249,33 @@ export default function App() {
             returnKeyType="send"
           />
           <TouchableOpacity
+            onPressIn={() => {
+              sendScale.value = withSpring(0.9, {
+                damping: 15,
+                stiffness: 200,
+              });
+            }}
+            onPressOut={() => {
+              sendScale.value = withSpring(1, { damping: 15, stiffness: 200 });
+            }}
             style={[styles.sendButton, loading && styles.sendButtonDisabled]}
             onPress={handleAsk}
             disabled={loading}
           >
-            <HugeiconsIcon icon={SentIcon} size={20} color="#ffffff" />
+            <Animated.View style={sendButtonStyle}>
+              {loading ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <HugeiconsIcon icon={SentIcon} size={20} color="#ffffff" />
+              )}
+            </Animated.View>
           </TouchableOpacity>
         </Animated.View>
 
         {talking && (
-          <Animated.View entering={FadeIn.duration(500)}>
+          <Animated.View
+            entering={FadeIn.duration(500).easing(Easing.out(Easing.exp))}
+          >
             <Text className="text-gray-400 text-center">
               Verify answers from AI before utilising them.
             </Text>

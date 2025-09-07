@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {BASE_URL} from "../constants/auth";
+import { BASE_URL } from "../constants/auth";
 
 export default function SignupWindow() {
   const router = useRouter();
@@ -47,115 +47,131 @@ export default function SignupWindow() {
       if (err?.response?.data?.message) {
         msg = err.response.data.message;
       }
-      setError(err.response?.data?.message || msg);
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View className="px-4 py-2">
-      <Text className="text-3xl font-extrabold text-emerald-400 mb-8 text-center tracking-tight drop-shadow-lg">
-        Sign Up
-      </Text>
-      {/* Username */}
-      <View className="mb-4 flex-row items-center bg-emerald-950/70 rounded-full px-5 py-2 border border-emerald-800/60 shadow-md">
-        <Feather
-          name="user"
-          size={22}
-          color="#6ee7b7"
-          style={{ marginRight: 10 }}
-        />
+    <View style={styles.container}>
+      <Text style={styles.title}>Sign Up</Text>
+
+      <View style={styles.inputContainer}>
+        <Feather name="user" size={22} color="#22c55e" />
         <TextInput
-          className="flex-1 h-12 text-center text-emerald-100 text-base"
+          style={styles.input}
           placeholder="Username"
-          placeholderTextColor="#6ee7b7"
-          autoCapitalize="none"
+          placeholderTextColor="#9ca3af"
           value={username}
           onChangeText={setUsername}
-          style={{ borderRadius: 9999, paddingLeft: 0 }}
         />
       </View>
-      {/* Email */}
-      <View className="mb-5 flex-row items-center bg-emerald-950/70 rounded-full px-5 py-2 border border-emerald-800/60 shadow-md">
-        <Feather
-          name="mail"
-          size={22}
-          color="#6ee7b7"
-          style={{ marginRight: 10 }}
-        />
+
+      <View style={styles.inputContainer}>
+        <Feather name="mail" size={22} color="#22c55e" />
         <TextInput
-          className="flex-1 h-12 text-center text-emerald-100 text-base"
+          style={styles.input}
           placeholder="Email ID"
-          placeholderTextColor="#6ee7b7"
+          placeholderTextColor="#9ca3af"
           keyboardType="email-address"
-          autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
-          style={{ borderRadius: 9999, paddingLeft: 0 }}
         />
       </View>
-      <View className="mb-2 flex-row items-center bg-emerald-950/70 rounded-full px-5 py-2 border border-emerald-800/60 shadow-md">
-        <Feather
-          name="lock"
-          size={22}
-          color="#6ee7b7"
-          style={{ marginRight: 10 }}
-        />
+
+      <View style={styles.inputContainer}>
+        <Feather name="lock" size={22} color="#22c55e" />
         <TextInput
-          className="flex-1 h-12 text-center text-emerald-100 text-base"
-          placeholder="     Password"
-          placeholderTextColor="#6ee7b7"
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#9ca3af"
           secureTextEntry={!showPassword}
           value={password}
           onChangeText={setPassword}
-          style={{ borderRadius: 9999, paddingLeft: 0 }}
         />
         <TouchableOpacity onPress={() => setShowPassword((v) => !v)}>
           <Feather
             name={showPassword ? "eye-off" : "eye"}
             size={20}
-            color="#6ee7b7"
+            color="#22c55e"
           />
         </TouchableOpacity>
       </View>
-      <View className="mb-2 flex-row items-center bg-emerald-950/70 rounded-full px-5 py-2 border border-emerald-800/60 shadow-md">
-        <Feather
-          name="lock"
-          size={22}
-          color="#6ee7b7"
-          style={{ marginRight: 10 }}
-        />
+
+      <View style={styles.inputContainer}>
+        <Feather name="lock" size={22} color="#22c55e" />
         <TextInput
-          className="flex-1 h-12 text-center text-emerald-100 text-base"
+          style={styles.input}
           placeholder="Confirm Password"
-          placeholderTextColor="#6ee7b7"
+          placeholderTextColor="#9ca3af"
           secureTextEntry={!showPassword}
           value={confirm}
           onChangeText={setConfirm}
-          style={{ borderRadius: 9999, paddingLeft: 0 }}
         />
       </View>
-      {error ? (
-        <Text className="text-red-400 text-center mb-2 font-semibold">
-          {error}
-        </Text>
-      ) : null}
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
       <TouchableOpacity
-        className="w-full h-12 bg-emerald-500 rounded-full items-center justify-center mt-6 shadow-lg"
-        style={{ elevation: 3, flexDirection: "row" }}
-        activeOpacity={0.85}
+        style={styles.submitButton}
         onPress={handleSignup}
         disabled={loading}
       >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text className="text-white text-2xl font-bold tracking-wide">
-            Sign Up
-          </Text>
+          <Text style={styles.submitButtonText}>Sign Up</Text>
         )}
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = {
+  container: {
+    padding: 24,
+    flex: 1,
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#22c55e",
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#16241e",
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#22c55e40",
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: "#e5e7eb",
+    paddingLeft: 8,
+  },
+  errorText: {
+    color: "#ef4444",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  submitButton: {
+    backgroundColor: "#02952e",
+    paddingVertical: 14,
+    borderRadius: 999,
+    alignItems: "center",
+  },
+  submitButtonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+} as const;
