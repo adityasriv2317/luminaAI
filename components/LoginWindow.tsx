@@ -113,7 +113,7 @@ const styles = {
   container: {
     padding: 24,
     flex: 1,
-    justifyContent: "start",
+    justifyContent: "flex-start",
   },
   title: {
     fontSize: 28,
