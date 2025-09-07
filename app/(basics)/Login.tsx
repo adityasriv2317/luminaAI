@@ -25,7 +25,6 @@ import LottieView from "lottie-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LoginWindow from "@/components/LoginWindow";
 import SignupWindow from "@/components/SignupWindow";
-import AnimPath from "@/constants/path";
 
 export default function Login() {
   const screenHeight = Dimensions.get("window").height;
@@ -133,7 +132,7 @@ export default function Login() {
               right: 0,
               bottom: 0,
               height: screenHeight * 0.55,
-              backgroundColor: "#16341e",
+              backgroundColor: "#141f15",
               borderTopLeftRadius: 32,
               borderTopRightRadius: 32,
               paddingBottom: 24,
@@ -143,6 +142,10 @@ export default function Login() {
           ]}
         >
           <View style={{ alignItems: "center", paddingTop: 12 }}>
+            <LinearGradient
+              colors={["#103323", "#000"]}
+              className="flex-1 inset-0"
+            />
             <View
               style={{
                 width: 48,

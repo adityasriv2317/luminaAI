@@ -21,6 +21,7 @@ import {
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BASE_URL } from "@/constants/auth";
+import { getToken } from "@/constants/saveToken";
 
 import CustomAlert from "@/components/Alert";
 
@@ -60,6 +61,9 @@ export default function ProfileScreen() {
     const fetchProfile = async () => {
       setLoading(true);
       setError("");
+
+      const token = await getToken();
+
       try {
         const username = await AsyncStorage.getItem("username");
         if (!username) {
@@ -67,7 +71,12 @@ export default function ProfileScreen() {
           setLoading(false);
           return;
         }
-        const res = await axios.get(`${BASE_URL}/profile?username=${username}`);
+        const res = await axios.get(`${BASE_URL}/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         setProfile(res.data);
       } catch (err: any) {
         setError("Failed to fetch profile.");

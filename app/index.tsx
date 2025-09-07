@@ -1,6 +1,7 @@
 import {
   ArrowExpand01Icon,
   Copy01Icon,
+  MenuTwoLineIcon,
   SentIcon,
   UserIcon,
 } from "@hugeicons/core-free-icons";
@@ -128,12 +129,21 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       {/* Top App Bar */}
       <View style={styles.topAppBar}>
-        <Text style={styles.topAppBarTitle}>Lumina AI</Text>
+        <TouchableOpacity style={styles.menuButton}>
+          <HugeiconsIcon icon={MenuTwoLineIcon} size={22} color="#22c55e" />
+        </TouchableOpacity>
+        <Text style={styles.topAppBarTitle}>
+          {talking
+            ? chat[0].text.length > 20
+              ? `${chat[0].text.slice(0, 19)}...`
+              : chat[0].text
+            : "Lumina AI"}
+        </Text>
         <TouchableOpacity
           onPress={() => router.push("/(basics)/profile")}
           style={styles.profileButton}
         >
-          <HugeiconsIcon icon={UserIcon} size={20} color="#22c55e" />
+          <HugeiconsIcon icon={UserIcon} size={22} color="#22c55e" />
         </TouchableOpacity>
       </View>
 
@@ -310,7 +320,15 @@ const styles = StyleSheet.create({
   profileButton: {
     position: "absolute",
     right: 16,
-    top: 14,
+    top: 12,
+    padding: 8,
+    borderRadius: 999,
+    backgroundColor: "#16241e",
+  },
+  menuButton: {
+    position: "absolute",
+    left: 16,
+    top: 12,
     padding: 8,
     borderRadius: 999,
     backgroundColor: "#16241e",

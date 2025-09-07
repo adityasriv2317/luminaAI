@@ -10,7 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { BASE_URL } from "../constants/auth";
+import { BASE_URL } from "@/constants/auth";
+import { saveToken } from "@/constants/saveToken";
 
 export default function SignupWindow() {
   const router = useRouter();
@@ -34,11 +35,14 @@ export default function SignupWindow() {
     }
     setLoading(true);
     try {
-      await axios.post(`${BASE_URL}/signup`, {
+      const res = await axios.post(`${BASE_URL}/signup`, {
         username,
         email,
         password,
       });
+      if (res.data.token) {
+        await saveToken(res.data.token);
+      }
       await AsyncStorage.setItem("username", username);
       await AsyncStorage.setItem("welcomeScreenShown", "true");
       router.replace("/");

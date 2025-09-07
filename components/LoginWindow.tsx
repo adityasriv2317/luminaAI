@@ -10,7 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { BASE_URL } from "../constants/auth";
+import { BASE_URL } from "@/constants/auth";
+import { saveToken } from "@/constants/saveToken";
 
 export default function LoginWindow() {
   const router = useRouter();
@@ -36,10 +37,14 @@ export default function LoginWindow() {
       }
       const res = await axios.post(`${BASE_URL}/login`, body);
       // Save username to local storage and navigate to home
+      if (res.data.token) {
+        await saveToken(res.data.token);
+      }
       const uname =
         body.username || (res.data && res.data.username) || emailOrUsername;
       await AsyncStorage.setItem("username", uname);
       await AsyncStorage.setItem("welcomeScreenShown", "true");
+
       router.replace("/");
     } catch (err: any) {
       let msg = "Login failed. Please try again.";
@@ -125,7 +130,7 @@ const styles = {
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#16241e",
+    backgroundColor: "#103323",
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 12,
