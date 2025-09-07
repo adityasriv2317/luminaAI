@@ -130,7 +130,7 @@ export default function App() {
       <View style={styles.topAppBar}>
         <Text style={styles.topAppBarTitle}>Lumina AI</Text>
         <TouchableOpacity
-          onPress={() => router.push("/profile")}
+          onPress={() => router.push("/(basics)/profile")}
           style={styles.profileButton}
         >
           <HugeiconsIcon icon={UserIcon} size={20} color="#22c55e" />

@@ -7,7 +7,6 @@ import {
   useColorScheme,
 } from "react-native";
 
-// It's good practice to define your theme colors
 const materialColors = {
   light: {
     surfaceContainer: "#ECEEEF", // Dialog background
@@ -54,26 +53,28 @@ export default function CustomAlert({
 
           <View style={styles.buttonContainer}>
             {buttons.map((btn, index) => (
-              <Pressable
-                key={index}
-                style={styles.button}
-                onPress={btn.onPress}
-                android_ripple={{
-                  color: isDarkMode
-                    ? materialColors.dark.onSurface
-                    : materialColors.light.onSurface,
-                  borderless: false,
-                }}
-              >
-                <Text
-                  style={[
-                    styles.buttonText,
-                    btn.style === "destructive" && styles.destructiveButtonText,
-                  ]}
+              <View key={index} style={styles.buttonWrapper}>
+                <Pressable
+                  style={styles.button}
+                  onPress={btn.onPress}
+                  android_ripple={{
+                    color: isDarkMode
+                      ? materialColors.dark.onSurface
+                      : materialColors.light.onSurface,
+                    borderless: false,
+                  }}
                 >
-                  {btn.text}
-                </Text>
-              </Pressable>
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      btn.style === "destructive" &&
+                        styles.destructiveButtonText,
+                    ]}
+                  >
+                    {btn.text}
+                  </Text>
+                </Pressable>
+              </View>
             ))}
           </View>
         </View>
@@ -101,6 +102,11 @@ const getStyles = (isDarkMode) => {
     contentContainer: {
       padding: 24,
     },
+    buttonWrapper: {
+      borderRadius: 25,
+      overflow: "hidden",
+      marginLeft: 8,
+    },
     title: {
       fontSize: 24,
       fontFamily: "sans-serif", // Android default
@@ -122,10 +128,9 @@ const getStyles = (isDarkMode) => {
       paddingTop: 8,
     },
     button: {
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-      marginLeft: 8, // Space between buttons
-      borderRadius: 20, // For the ripple effect
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      backgroundColor: "#515158",
     },
     buttonText: {
       fontSize: 14,

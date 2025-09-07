@@ -200,12 +200,12 @@ const styles = {
     alignItems: "center",
   },
   loginButtonText: {
-    color: "#047857",
+    color: "#308144",
     fontSize: 20,
     fontWeight: "600",
   },
   signupButton: {
-    backgroundColor: "#22c55e",
+    backgroundColor: "#308144",
     paddingVertical: 14,
     borderRadius: 999,
     alignItems: "center",

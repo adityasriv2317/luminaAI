@@ -20,9 +20,9 @@ import {
 } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BASE_URL } from "../constants/auth";
+import { BASE_URL } from "@/constants/auth";
 
-import CustomAlert from "../components/Alert";
+import CustomAlert from "@/components/Alert";
 
 export default function ProfileScreen() {
   const [isLogoutAlertVisible, setLogoutAlertVisible] = useState(false);
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingVertical: 10,
     backgroundColor: "#10151a",
     shadowColor: "#000",
     shadowOpacity: 0.2,
