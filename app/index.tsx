@@ -54,8 +54,8 @@ export default function HomeScreen() {
     setIsLoading,
     chatId,
     setChatId,
-    messages,
-    setMessages,
+    chat,
+    setChat,
     inputMessage,
     setInputMessage,
     createNewChat,
@@ -63,9 +63,9 @@ export default function HomeScreen() {
   } = useChat();
 
   const [talking, SetTalking] = useState(false);
-  const [chat, SetChat] = useState<
-    Array<{ sender: number; text: string; expand: boolean }>
-  >([]);
+  // const [chat, SetChat] = useState<
+  //   Array<{ sender: number; text: string; expand: boolean }>
+  // >([]);
   const [username, setUsername] = useState("");
   const [question, setQuestion] = useState("");
   const [response, setResponse] = useState("");
@@ -73,6 +73,12 @@ export default function HomeScreen() {
   const [error, setError] = useState("");
 
   const sendScale = useSharedValue(1);
+
+  interface ChatMessage {
+    sender: number;
+    text: string;
+    expand: boolean;
+  }
 
   useEffect(() => {
     const checkWelcomeScreen = async () => {
@@ -109,7 +115,7 @@ export default function HomeScreen() {
       return;
     }
     const userMessage = { sender: 0, text: question, expand: true };
-    SetChat((prev) => [...prev, userMessage]);
+    setChat((prev: ChatMessage[]) => [...prev, userMessage]);
     setLoading(true);
     SetTalking(true);
     setQuestion("");
@@ -129,7 +135,7 @@ export default function HomeScreen() {
       );
       setResponse(res.data?.answer || "No response.");
       const botMessage = { sender: 1, text: res.data?.answer, expand: false };
-      SetChat((prev) => [...prev, botMessage]);
+      setChat((prev: ChatMessage[]) => [...prev, botMessage]);
     } catch (err: any) {
       let msg = "Failed to get response.";
       if (err?.response?.data?.message) msg = err.response.data.message;
@@ -140,9 +146,10 @@ export default function HomeScreen() {
   };
 
   const toggleExpand = (i: number) => {
-    SetChat((prev) =>
-      prev.map((msg, ind) =>
-        ind === i ? { ...msg, expand: !msg.expand } : msg
+    setChat((prev: ChatMessage[]) =>
+      prev.map(
+        (msg: ChatMessage, ind: number): ChatMessage =>
+          ind === i ? { ...msg, expand: !msg.expand } : msg
       )
     );
   };
@@ -161,13 +168,6 @@ export default function HomeScreen() {
     transform: [{ scale: sendScale.value }],
   }));
 
-  const handleDrawerOpen = () => {
-    // check if chat history exists
-    if (chatHistory.size === 0) {
-      getChats();
-    }
-  };
-
   const drawerRef = useRef<DrawerLayoutAndroid>(null);
 
   return (
@@ -177,7 +177,7 @@ export default function HomeScreen() {
       drawerPosition="left"
       drawerBackgroundColor={"transparent"}
       renderNavigationView={() => <ChatDrawer />}
-      onDrawerOpen={handleDrawerOpen}
+      onDrawerOpen={getChats}
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.topAppBar}>
@@ -190,7 +190,11 @@ export default function HomeScreen() {
             <HugeiconsIcon icon={MenuTwoLineIcon} size={22} color="#22c55e" />
           </TouchableOpacity>
           <Text style={styles.topAppBarTitle}>
-            {chatId ? `Chat ID: ${chatId}` : "Lumina AI"}
+            {talking
+              ? chat[0].text.length > 20
+                ? `${chat[0].text.slice(0, 19)}...`
+                : chat[0].text
+              : "Lumina AI"}
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/(basics)/profile")}
@@ -210,7 +214,7 @@ export default function HomeScreen() {
               ref={scrollViewRef}
               contentContainerStyle={styles.scrollContainer}
             >
-              {chat.map((msg, i) => (
+              {chat.map((msg: ChatMessage, i: number) => (
                 <Animated.View
                   key={i}
                   entering={FadeInDown.duration(450).easing(

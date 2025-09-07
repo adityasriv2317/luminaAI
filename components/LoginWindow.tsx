@@ -42,6 +42,7 @@ export default function LoginWindow() {
       }
       const uname =
         body.username || (res.data && res.data.username) || emailOrUsername;
+      // console.log(res.data);
       await AsyncStorage.setItem("username", uname);
       await AsyncStorage.setItem("welcomeScreenShown", "true");
 
@@ -56,6 +57,7 @@ export default function LoginWindow() {
       ) {
         msg = err.response.data.message;
       }
+      // console.log(err);
       setError(msg);
     } finally {
       setLoading(false);

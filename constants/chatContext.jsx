@@ -1,9 +1,9 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import axios from "axios";
+import { createContext, useContext, useState } from "react";
+import { BASE_URL } from "./auth.js";
+import { getToken } from "./saveToken.js";
 
 export const ChatContext = createContext();
-import { getToken } from "./saveToken.js";
-import axios from "axios";
-import { BASE_URL } from "./auth.js";
 
 export const ChatProvider = ({ children }) => {
   const [chatTitle, setChatTitle] = useState("New Chat");
@@ -11,13 +11,15 @@ export const ChatProvider = ({ children }) => {
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [messages, setMessages] = useState([]);
+  const [chat, setChat] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
 
   const getChats = async () => {
     const token = await getToken();
     try {
-      const res = axios.get(`%{BASE_URL}/chats`, {
+      setIsLoading(true);
+      //   console.log(token);
+      const res = await axios.get(`${BASE_URL}/chats`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -25,6 +27,8 @@ export const ChatProvider = ({ children }) => {
       setChatHistory(res.data);
     } catch (error) {
       console.error("Error fetching chats:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -40,9 +44,29 @@ export const ChatProvider = ({ children }) => {
           },
         }
       );
-      setChatId(res.data);
+      setChatId(res.data.chatId);
     } catch (error) {
       console.error("Error creating new chat:", error);
+    }
+  };
+
+  const handleClearChats = async () => {
+    const token = await getToken();
+    try {
+      setIsLoading(true);
+      await axios.delete(`${BASE_URL}/chats`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setChatHistory([]);
+      createNewChat();
+      setChatTitle("New Chat");
+      setChat([]);
+    } catch (error) {
+      console.error("Error deleting chats:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -57,12 +81,13 @@ export const ChatProvider = ({ children }) => {
         setChatHistory,
         isLoading,
         setIsLoading,
-        messages,
-        setMessages,
+        chat,
+        setChat,
         inputMessage,
         setInputMessage,
         createNewChat,
         getChats,
+        handleClearChats,
       }}
     >
       {children}
