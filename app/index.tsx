@@ -9,7 +9,7 @@ import { HugeiconsIcon } from "@hugeicons/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -48,12 +48,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
   const {
-    chatHistory,
-    setChatHistory,
-    isLoading,
-    setIsLoading,
     chatId,
-    setChatId,
     chat,
     setChat,
     inputMessage,
@@ -61,16 +56,10 @@ export default function HomeScreen() {
     createNewChat,
     getChats,
   } = useChat();
-
-  const [talking, SetTalking] = useState(false);
-  // const [chat, SetChat] = useState<
-  //   Array<{ sender: number; text: string; expand: boolean }>
-  // >([]);
-  const [username, setUsername] = useState("");
-  const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [talking, setTalking] = React.useState(false);
+  const [username, setUsername] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
 
   const sendScale = useSharedValue(1);
 
@@ -109,22 +98,21 @@ export default function HomeScreen() {
 
   const handleAsk = async () => {
     setError("");
-    setResponse("");
-    if (!question.trim()) {
+    if (!inputMessage.trim()) {
       setError("Please enter a question.");
       return;
     }
-    const userMessage = { sender: 0, text: question, expand: true };
-    setChat((prev: ChatMessage[]) => [...prev, userMessage]);
+    const userMessage = { sender: 0, text: inputMessage, expand: true };
+    setChat((prev: any[]) => [...prev, userMessage]);
     setLoading(true);
-    SetTalking(true);
-    setQuestion("");
+    setTalking(true);
+    setInputMessage("");
     try {
       const token = await getToken();
       const res = await axios.post(
         `${BASE_URL}/chats/${chatId}/message`,
         {
-          query: question,
+          query: userMessage.text,
         },
         {
           headers: {
@@ -133,9 +121,8 @@ export default function HomeScreen() {
           },
         }
       );
-      setResponse(res.data?.answer || "No response.");
       const botMessage = { sender: 1, text: res.data?.answer, expand: false };
-      setChat((prev: ChatMessage[]) => [...prev, botMessage]);
+      setChat((prev: any[]) => [...prev, botMessage]);
     } catch (err: any) {
       let msg = "Failed to get response.";
       if (err?.response?.data?.message) msg = err.response.data.message;
@@ -146,10 +133,9 @@ export default function HomeScreen() {
   };
 
   const toggleExpand = (i: number) => {
-    setChat((prev: ChatMessage[]) =>
-      prev.map(
-        (msg: ChatMessage, ind: number): ChatMessage =>
-          ind === i ? { ...msg, expand: !msg.expand } : msg
+    setChat((prev: any[]) =>
+      prev.map((msg: any, ind: number) =>
+        ind === i ? { ...msg, expand: !msg.expand } : msg
       )
     );
   };
@@ -226,7 +212,7 @@ export default function HomeScreen() {
                   }`}
                 >
                   <View
-                    className={`p-3 rounded-b-3xl max-w-[80%] ${
+                    className={`p-4 rounded-b-3xl max-w-[80%] ${
                       msg.sender === 0
                         ? "bg-gray-800 rounded-l-3xl"
                         : "bg-green-700 rounded-r-3xl"
@@ -309,8 +295,8 @@ export default function HomeScreen() {
               placeholder="Ask anything..."
               placeholderTextColor="#9ca3b8"
               multiline
-              value={question}
-              onChangeText={setQuestion}
+              value={inputMessage}
+              onChangeText={setInputMessage}
               editable={!loading}
               onSubmitEditing={handleAsk}
               returnKeyType="send"
