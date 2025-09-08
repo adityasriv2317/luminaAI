@@ -8,8 +8,8 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { useRouter } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -62,6 +62,15 @@ export default function HomeScreen() {
   const [username, setUsername] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
+
+  const [drawerKey, setDrawerKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setDrawerKey((prev) => prev + 1);
+      return () => {};
+    }, [])
+  );
 
   const sendScale = useSharedValue(1);
 
@@ -166,6 +175,7 @@ export default function HomeScreen() {
 
   return (
     <DrawerLayoutAndroid
+      key={drawerKey}
       ref={drawerRef}
       drawerWidth={320}
       drawerPosition="left"
@@ -187,7 +197,10 @@ export default function HomeScreen() {
             {talking ? chatTitle : "Lumina AI"}
           </Text>
           <TouchableOpacity
-            onPress={() => router.push("/(basics)/profile")}
+            onPress={() => {
+              drawerRef.current?.closeDrawer();
+              router.push("/(basics)/profile");
+            }}
             style={styles.profileButton}
           >
             <HugeiconsIcon icon={UserIcon} size={22} color="#22c55e" />

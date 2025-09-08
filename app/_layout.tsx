@@ -18,6 +18,10 @@ export default function Layout() {
               animation: "ios_from_right",
             }}
           />
+          {/* <Stack.Screen name="index" />
+            <Stack.Screen name="(basics)/profile" />
+            <Stack.Screen name="(basics)/Login" />
+          </Stack> */}
           <Toast />
         </ChatProvider>
       </BottomSheetModalProvider>

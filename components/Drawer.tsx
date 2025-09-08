@@ -43,15 +43,25 @@ export function ChatDrawer() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={{ flex: 1, width: "100%", padding: 16 }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          width: "100%",
+          paddingHorizontal: 16,
+          paddingTop: 16,
+        }}
+      >
         <Text style={styles.title}>Chat History</Text>
-        {isLoading && (
-          <View className="flex-row justify-center items-center my-4">
-            <ActivityIndicator size="large" color="#22c55e" />
-          </View>
-        )}
+        {isLoading &&
+          Array.isArray(chatHistory) &&
+          chatHistory.length === 0 && (
+            <View className="flex-row justify-center bg-transparent items-center my-4">
+              <ActivityIndicator size="large" color="#22c55e" />
+            </View>
+          )}
         {/* chat list */}
         <FlatList
+          scrollEnabled
           data={chatHistory}
           keyExtractor={(item, i) => i.toString()}
           contentContainerStyle={styles.flatList}
@@ -120,6 +130,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     paddingHorizontal: 16,
+    paddingVertical: 16,
     gap: 8,
   },
   listText: {
@@ -127,5 +138,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 18,
   },
-  flatList: { flex: 1, marginTop: 20 },
+  flatList: { marginTop: 20 },
 });
